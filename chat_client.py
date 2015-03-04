@@ -26,7 +26,7 @@ def sighandler(signum, frame):
             end_sock.send(msg)
             end_sock.close()
         except:
-            print 'ERROR: failed to inform server of logout.' 
+            print 'ERROR: failed to inform server of logout.'
     print '\n-----------------Simple Chat Client closed.-------------------\n'
     sys.exit(1)
 
@@ -181,7 +181,7 @@ def process_incoming_packet(conn):
     if p_type == GET_ADDR_ASK:
         contents = p_contents[1].split(' ', 2)
         handle_get_addr_ask(contents[0], contents[1], int(contents[2]), conn)
-        return  
+        return
 
     conn.close()
 
@@ -195,7 +195,7 @@ def process_incoming_packet(conn):
         handle_broadcast_blocked()
 
     elif p_type == CHAT_MSG_OK:
-        handle_chat_msg_ok()
+        handle_chat_msg_ok(p_contents[1])
 
     elif p_type == BROADCAST_OK:
         handle_broadcast_ok()
@@ -214,7 +214,7 @@ def process_incoming_packet(conn):
 
     elif p_type == GET_ADDR_OK:
         contents = p_contents[1].split(' ', 2)
-        handle_get_addr_ok(contents[0], contents[1], int(contents[2]))  
+        handle_get_addr_ok(contents[0], contents[1], int(contents[2]))
 
     elif p_type == GET_ADDR_FAIL:
         handle_get_addr_fail(p_contents[1])
@@ -325,7 +325,7 @@ def handle_get_addr_fail(username):
 
 
 def handle_get_addr_invalid(username):
-    print 'ERROR: address retrieval user %s does not exist.\n' %username   
+    print 'ERROR: address retrieval user %s does not exist.\n' %username
 
 
 def handle_chat_msg(username, msg_text):
@@ -336,7 +336,7 @@ def handle_private_msg(username, msg_text):
     if not (username in address_book):
         print 'WARNING: message received from unknown sender\n.'
         interrupt_main()
-    print '[private] %s: %s\n' %(username, msg_text)  
+    print '[private] %s: %s\n' %(username, msg_text)
 
 
 def handle_alert_login(username):
@@ -373,7 +373,7 @@ def handle_logout_same_user():
     print '> Another client has logged into your account. You have been \
     logged out.\n'
     del session_info['username']
-    interrupt_main()    
+    interrupt_main()
 
 
 def handle_logout_blocked():
@@ -419,7 +419,7 @@ def login():
         password = raw_input('Password: ')
         login_packet = ' '.join((LOGIN, username, password, \
             session_info['host_addr'][0], str(session_info['host_addr'][1])))
-        
+
         try:
             login_sock = new_socket()
             login_sock.connect(server_addr)
@@ -443,7 +443,7 @@ def login():
             print '> Invalid Username.'
         elif login_response == USER_BLOCKED:
             print '> This user is currently blocked. Please try again later.\
-            \n'     
+            \n'
         else:
             print '> Unknown login error.\n'
         break
