@@ -79,7 +79,7 @@ def send_packet(send_address, packet):
 
 # thread
 def check_heartbeat():
-    '''checks whether each user is still online'''
+    """checks whether each user is still online"""
     while 1: 
         for username in users:
             user = users[username]

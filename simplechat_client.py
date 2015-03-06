@@ -157,13 +157,6 @@ def process_commands():
             kill_sock.close()
             break
 
-        # help - list out all commands
-        elif command[0] == HELP:
-            commands = '\n>> '.join(('> Commands:', SEND_MSG, BROADCAST, \
-                CHECK_ONLINE, BLOCK_USER, UNBLOCK_USER, GET_ADDR, \
-                REMOVE_ADDR, CHECK_ADDRESS_BOOK, PRIVATE_MSG, LOGOUT))
-            print '%s\n' %commands
-
         # check who is available for private messaging
         elif command[0] == CHECK_ADDRESS_BOOK:
             if address_book:
@@ -173,6 +166,13 @@ def process_commands():
                 print ''
             else:
                 print '> Your Address Book is empty.\n'
+
+        # help - list out all commands
+        elif command[0] == HELP:
+            commands = '\n>> '.join(('> Commands:', SEND_MSG, BROADCAST, \
+                CHECK_ONLINE, BLOCK_USER, UNBLOCK_USER, GET_ADDR, \
+                REMOVE_ADDR, CHECK_ADDRESS_BOOK, PRIVATE_MSG, LOGOUT))
+            print '%s\n' %commands
 
         # allow user to make space
         elif command[0] == '':
@@ -296,6 +296,7 @@ def process_incoming_packet(conn):
     else:
         print '> ALERT: unknown message received.\n%s\n' %packet
         interrupt_main()
+
     return
 
 
@@ -344,14 +345,16 @@ def handle_unblock_invalid(username):
     print '> ERROR: invalid unblock target user %s.\n' %username
 
 
+# P2P security and consent
 def handle_get_addr_ok(username, target_ip, target_port):
     address_book[username] = (target_ip, target_port)
     print '> Address of user %s saved.\n' %username
 
 
+# P2P security and consent
 def handle_get_addr_ask(username, asker_ip, asker_port):
     print 'User %s wants to exchange private messages with you. ' %username + \
-    'Press [enter] to continue.'
+    'Press [enter] to continue.' # interrupt raw_input from other thread
     response = raw_input('Would you like to accept? [Y/n] ')
     if len(response) == 0 or response.lower()[0] != 'y':
         print 'Address not given to user %s.\n' %username
@@ -471,6 +474,7 @@ def login():
         login_packet = ' '.join((LOGIN, username, password, \
             session_info['host_addr'][0], str(session_info['host_addr'][1])))
 
+        # send login request and receive response
         try:
             login_sock = new_socket()
             login_sock.connect(server_addr)
@@ -487,7 +491,7 @@ def login():
 
         if login_response == INVALID_PASSWORD:
             print '> Invalid password. Please try again.\n'
-            continue # let user try again
+            continue # let user try again until server says stop
 
         # bad login
         if login_response == INVALID_USERNAME:
