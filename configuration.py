@@ -1,13 +1,12 @@
-BUF_SIZE = 4096
 MAX_LOGIN_ATTEMPTS = 3
 BLOCK_TIME = 60 #seconds
 HEARTBEAT_TIME = 30 #seconds
-TIMEOUT = 40 #seconds
-
-
+TIMEOUT = HEARTBEAT_TIME + 5 #seconds, give a little leeway
+THREAD_POOL_SIZE = 16
+BUF_SIZE = 4096
 ACCOUNTS_FILENAME = 'credentials.txt'
 
-# requests from client to server
+# user commands on client
 LOGIN = 'login'
 LOGOUT = 'logout'
 SEND_MSG = 'message'
@@ -17,49 +16,51 @@ BLOCK_USER = 'block'
 UNBLOCK_USER = 'unblock'
 CHECK_ONLINE = 'online'
 GET_ADDR = 'getaddress'
-HELP = 'help'
+REMOVE_ADDR = 'removeaddress'
 CHECK_ADDRESS_BOOK = 'addressbook'
-TURN_INVISIBLE = 'invisible' 	# extra credit
-TURN_VISIBLE = 'visible'		# extra credit
+HELP = 'help'
 
+# --- Protocol ---
+#
 # log responses from server to client
-LOGIN_OK = 'login_ok'
-ALREADY_OFFLINE = 'err_offline'
-INVALID_PASSWORD = 'err_pword'
-INVALID_USERNAME = 'err_uname'
-LOGOUT_SAME_USER = 'logout_sameuser'
-HEARTBEAT = 'heartbeat'
+LOGIN_OK = 'login0'
+INVALID_PASSWORD = 'login1'
+INVALID_USERNAME = 'login2'
+LOGOUT_SAME_USER = 'logout1'
+HEARTBEAT = 'hbeat'
 
 # message sending responses from server to client
-INVALID_RECEIVER = 'err_rname'
-CHAT_MSG_OK = 'chat_msg_ok'
-BROADCAST_OK = 'bcast_ok'
-MSG_BLOCKED = 'err_msgblocked'
-BROADCAST_BLOCKED = 'err_bcastblocked'
+CHAT_MSG_OK = 'msg0'
+INVALID_RECEIVER = 'msg1'
+MSG_BLOCKED = 'msg2'
+BROADCAST_OK = 'bcast0'
+BROADCAST_BLOCKED = 'bcast1'
 
 # user blocking responses from server to client
-BLOCK_OK = 'block_ok'
-BLOCK_INVALID = 'err_blockuser'
-UNBLOCK_OK = 'unblock_ok'
-UNBLOCK_INVALID = 'err_unblockuser'
+BLOCK_OK = 'block0'
+BLOCK_INVALID = 'block1'
+ALREADY_BLOCKED = 'block2'
+UNBLOCK_OK = 'unblock0'
+UNBLOCK_INVALID = 'unblock1'
 
-# get address response from server to client
-GET_ADDR_OK = 'getaddr_ok'
-GET_ADDR_FAIL = 'err_getaddrfail'
-GET_ADDR_ASK = 'getaddr_ask'
-GET_ADDR_INVALID = 'err_getaddruser'
+# 'getaddress' response from server to client
+GET_ADDR_OK = 'getaddr0'
+GET_ADDR_INVALID = 'getaddr1'
+GET_ADDR_FAIL = 'getaddr2'
+GET_ADDR_ASK = 'getaddr3'
 
 # packet headers from server to client
 CHAT_MSG = 'chat_msg'
-ALERT_LOGIN = 'alert_login'
-ALERT_LOGOUT = 'alert_logout'
-USERS_ONLINE = 'users_online'
-USER_BLOCKED = 'logout_blocked'
-SERVER_DOWN = 'server_down'
-LOGOUT_TIMED_OUT = 'logout_time'
+ALERT_LOGIN = 'alert0'
+ALERT_LOGOUT = 'alert1'
+USERS_ONLINE = 'on_users'
+USER_BLOCKED = 'boot0'
+LOGOUT_TIMED_OUT = 'boot1'
+SERVER_DOWN = 'boot2'
 
 # header and footer for offline messages from server to client
-OFFLINE_MSGS_BEGIN = 'offline_msgs_begin'
-OFFLINE_MSGS_END = 'offline_msgs_end'
-NO_OFFLINE_MSGS = 'offline_none'
+OFFLINE_MSG_OK = 'off_msg0'
+OFFLINE_MSGS_BEGIN = 'off_msg1'
+OFFLINE_MSGS_END = 'off_msg2'
+NO_OFFLINE_MSGS = 'off_msg3'
 
