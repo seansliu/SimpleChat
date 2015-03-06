@@ -1,6 +1,5 @@
 SimpleChat
-Written by Sean Liu
-UNI: sl3497
+written by Sean Liu
 
 
 INTRODUCTION
