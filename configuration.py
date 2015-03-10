@@ -1,3 +1,8 @@
+# SimpleChat Configurations
+#
+# Written by Sean Liu
+
+
 MAX_LOGIN_ATTEMPTS = 3
 BLOCK_TIME = 60 #seconds
 HEARTBEAT_TIME = 30 #seconds
@@ -19,6 +24,13 @@ GET_ADDR = 'getaddress'
 REMOVE_ADDR = 'removeaddress'
 CHECK_ADDRESS_BOOK = 'addressbook'
 HELP = 'help'
+
+# upcoming features
+# GET_STATUS = 'status'
+# SET_INVISIBLE = 'invisible'
+# SET_BUSY = 'busy'
+# SET_AVAILABLE = 'available'
+
 
 # --- Protocol ---
 #

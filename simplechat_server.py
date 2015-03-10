@@ -91,7 +91,7 @@ def check_heartbeat():
                     send_packet(user['address'], LOGOUT_TIMED_OUT)
                     logout_user(user)
             except:
-                continue
+                break
 
 
 # thread
@@ -103,6 +103,7 @@ def process_incoming_packets():
         p_contents = packet.split(' ', 1)
         p_type = p_contents[0]
 
+        # login request
         if p_type == LOGIN:
             contents = p_contents[1].split(' ', 3)
             username = contents[0]
@@ -114,14 +115,17 @@ def process_incoming_packets():
 
         conn.close()
 
+        # logout request
         if p_type == LOGOUT:
             username = p_contents[1]
             handle_logout(username)
 
+        # heartbeat 
         elif p_type == HEARTBEAT:
             username = p_contents[1]
             handle_heartbeat(username)
 
+        # send message request
         elif p_type == SEND_MSG:
             contents = p_contents[1].split(' ', 2)
             receiver_name = contents[0]
@@ -129,52 +133,61 @@ def process_incoming_packets():
             msg = contents[2]
             handle_send_msg(receiver_name, sender_name, msg)
 
+        # send broadcast request
         elif p_type == BROADCAST:
             contents = p_contents[1].split(' ', 1)
             sender_name = contents[0]
             msg = contents[1]
             handle_broadcast(sender_name, msg)
 
+        # block user request
         elif p_type == BLOCK_USER:
             contents = p_contents[1].split(' ', 1)
             target_name = contents[0]
             blocker_name = contents[1]
             handle_block(target_name, blocker_name)
 
+        # unblock user request
         elif p_type == UNBLOCK_USER:
             contents = p_contents[1].split(' ', 1)
             target_name = contents[0]
             unblocker_name = contents[1]
             handle_unblock(target_name, unblocker_name)
 
+        # check online users request
         elif p_type == CHECK_ONLINE:
             username = p_contents[1]
             handle_check_online(username)
 
+        # get user address request
         elif p_type == GET_ADDR:
             contents = p_contents[1].split(' ', 1)
             target_name = contents[0]
             asker_name = contents[1]
             handle_get_address_ask(target_name, asker_name)
 
+        # get user address ok - P2P privacy and consent
         elif p_type == GET_ADDR_OK:
             contents = p_contents[1].split(' ', 1)
             asker_name = contents[0]
             target_name = contents[1]
             handle_get_address_ok(target_name, asker_name)
 
+        # get user address fail - P2P private and consent
         elif p_type == GET_ADDR_FAIL:
             contents = p_contents[1].split(' ', 1)
             asker_name = contents[0]
             target_name = contents[1]
             handle_get_address_fail(target_name, asker_name)            
 
+        # packet not part of protocol
         else:
             print 'ALERT: received unrecognized packet:\n%s\n.' %packet
 
 
 def handle_login(username, password, conn, user_addr):
     """handles a login request"""
+    # check if username is valid
     if not (username in users):
         conn.send(INVALID_USERNAME)
         conn.close()
@@ -182,6 +195,7 @@ def handle_login(username, password, conn, user_addr):
     
     user = users[username]
 
+    # check if user is currently blocked
     if is_blocked(user):
         conn.send(USER_BLOCKED)
         conn.close()
@@ -498,7 +512,7 @@ def main():
     try:
         # use machine's IP address, and any available port
         listen_sock.bind(('0.0.0.0', 0))
-        listen_sock.listen(5)
+        listen_sock.listen(10)
     except:
         print 'ERROR: could not initialize socket.'
         listen_sock.close()
@@ -512,7 +526,7 @@ def main():
 
     # check heartbeats
     hb_thread = Thread(target=check_heartbeat)
-    hb_thread.setDaemon(True)
+    hb_thread.daemon = True
     hb_thread.start()
 
     # initialize worker threads

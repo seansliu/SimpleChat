@@ -2,6 +2,7 @@
 # 
 # Written by Sean Liu
 
+
 import socket
 import select
 import signal
@@ -55,15 +56,21 @@ def process_commands():
     server_addr = session_info['server_addr']
     host_ip = session_info['host_addr'][0]
     host_port = session_info['host_addr'][1]
+    input_fd = [sys.stdin]
 
     while 1:
-        user_input = raw_input('').strip()
+        # non-blocking reading from stdin
+        read, write, error = select.select(input_fd, [], [])
+        if not (sys.stdin in read):
+            continue
+
+        user_input = sys.stdin.readline().strip()
         command = user_input.split(' ', 2)
 
         # send normal chat message
         if command[0] == SEND_MSG:
             if len(command) < 3:
-                print '> Correct use: %s <target_user> <message>\n' %SEND_MSG
+                print '> Correct use: %s <user> <message>\n' %SEND_MSG
                 continue
             if command[1] == session_info['username']:
                 print '> ERROR: cannot message yourself.\n'
@@ -92,7 +99,7 @@ def process_commands():
         # blocking a user
         elif command[0] == BLOCK_USER:
             if len(command) < 2:
-                print '> Correct use: %s <target_user>\n' %BLOCK_USER
+                print '> Correct use: %s <user>\n' %BLOCK_USER
                 continue
             packet = ' '.join((BLOCK_USER, command[1], username))
             send_packet(server_addr, packet)
@@ -100,7 +107,7 @@ def process_commands():
         # unblocking a user
         elif command[0] == UNBLOCK_USER:
             if len(command) < 2:
-                print '> Correct use: %s <target_user>\n' %UNBLOCK_USER
+                print '> Correct use: %s <user>\n' %UNBLOCK_USER
                 continue
             packet = ' '.join((UNBLOCK_USER, command[1], username))
             send_packet(server_addr, packet)
@@ -108,7 +115,7 @@ def process_commands():
         # get user address for private messaging
         elif command[0] == GET_ADDR:
             if len(command) < 2:
-                print '> Correct use: %s <target_user>\n' %GET_ADDR
+                print '> Correct use: %s <user>\n' %GET_ADDR
                 continue
             if command[1] == session_info['username']:
                 print '> ERROR: ask for someone else\'s address.\n'
@@ -119,7 +126,7 @@ def process_commands():
         # remove user address, no more private messaging each other
         elif command[0] == REMOVE_ADDR:
             if len(command) < 2:
-                print '> Correct use: %s <target_user>\n' %REMOVE_ADDR
+                print '> Correct use: %s <user>\n' %REMOVE_ADDR
                 continue            
             if not (command[1] in address_book):
                 print '> ERROR: user %s is not in your Address Book.\n' \
@@ -178,6 +185,7 @@ def process_commands():
         elif command[0] == '':
             pass
 
+        # unrecognized command
         else:
             print '> ERROR: invalid command. ' + \
             'Type \'%s\' for a list of available commands.\n' %HELP
@@ -297,8 +305,6 @@ def process_incoming_packet(conn):
         print '> ALERT: unknown message received.\n%s\n' %packet
         interrupt_main()
 
-    return
-
 
 def handle_invalid_receiver(username):
     print '> ERROR: message receiver %s not found.\n' %username
@@ -353,15 +359,15 @@ def handle_get_addr_ok(username, target_ip, target_port):
 
 # P2P security and consent
 def handle_get_addr_ask(username, asker_ip, asker_port):
-    print 'User %s wants to exchange private messages with you. ' %username + \
-    'Press [enter] to continue.' # interrupt raw_input from other thread
-    response = raw_input('Would you like to accept? [Y/n] ')
+    print '> ALERT: User %s wants to exchange private messages with you. ' \
+    %username
+    response = raw_input('> Would you like to accept? [Y/n] ')
     if len(response) == 0 or response.lower()[0] != 'y':
-        print 'Address not given to user %s.\n' %username
+        print '>> Address not given to user %s.\n' %username
         msg = ' '.join((GET_ADDR_FAIL, username, session_info['username']))
     else:
         address_book[username] = (asker_ip, asker_port)
-        print 'Address of user %s saved.\n' %username
+        print '>> Address of user %s saved.\n' %username
         msg = ' '.join((GET_ADDR_OK, username, session_info['username']))
     send_packet(session_info['server_addr'], msg)
 
@@ -371,7 +377,7 @@ def handle_get_addr_fail(username):
 
 
 def handle_get_addr_invalid(username):
-    print '> ERROR: address retrieval user %s does not exist.\n' %username
+    print '> ERROR: user %s does not exist.\n' %username
 
 
 def handle_remove_addr(username):
@@ -485,15 +491,17 @@ def login():
             print 'ERROR: failed to connect to chat server.\n'
             return False
 
+        # successful login
         if login_response == LOGIN_OK:
             session_info['username'] = username
             return True
 
+        # bad password
         if login_response == INVALID_PASSWORD:
             print '> Invalid password. Please try again.\n'
             continue # let user try again until server says stop
 
-        # bad login
+        # bad login request
         if login_response == INVALID_USERNAME:
             print '> Invalid Username.\n'
         elif login_response == USER_BLOCKED:
@@ -511,8 +519,12 @@ def main():
 
     print '> Starting Simple Chat client...'
 
-    # save server address
-    session_info['server_addr'] = (sys.argv[1], int(sys.argv[2]))
+    # check and save server address
+    try:
+        session_info['server_addr'] = (sys.argv[1], int(sys.argv[2]))
+    except:
+        print '> ERROR: invalid IP address and/or port number'
+        raise SystemExit
 
     # initialize listen socket
     listen_sock = new_socket()

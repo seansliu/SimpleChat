@@ -7,7 +7,6 @@ INTRODUCTION
 SimpleChat is a chat application service that allows users to login through a client and chat through a server or through direct P2P message exchange. It utilizes non-persistent TCP connections and is built on standard Python 2.7 libraries.
 
 
-
 HOW TO RUN
 
 0. Confirm account and chat settings in credentials.txt and configuration.py, respectively.
@@ -19,8 +18,7 @@ HOW TO RUN
 	
 3. Follow the instructions for logging in, and start chatting! :)
 
-4. Both server and client can be gracefully shut down by sending SIGINT signal, with Control-C.
-
+4. Both server and client can be gracefully shut down by sending SIGINT signal, with Control-C. You may also shut down the client by logging out.
 
 
 PROGRAM DESIGN
@@ -43,11 +41,10 @@ Configuration - configuration.py
 To make it easy to change configuration values, such as heartbeat timeout, maximum login attempts, and login block time, I placed all constants in configuration.py. Therefore, if a user/admin wants to change these settings, one just has to open this file and alter its values.
 
 User Credentials - credentials.txt
-credentials.txt contains the user account information. Each line contains a username and password.
+credentials.txt contains the user account information. Each line contains a username and password, separated by whitespace.
 
 
-
-SAMPLE COMMANDS
+COMMANDS
 
 Online users can use the following commands:
 
@@ -57,27 +54,37 @@ Online users can use the following commands:
 - broadcast: send a message through the server to all online users.
 	broadcast [message_text]
 
-- private: privately send a message to a user through a P2P connection.
+- private: privately send a private message to a user through a P2P connection; the user must currently be in your address book.
 	private [user] [message_text]
 
-- block: blacklist a user
+- block: add a user to your blacklist; if user A has blacklisted user B, then B may no longer send messages to A nor see if A is online. (A may still message B and see whether B is online.)
 	block [user]
 
-- unblock: remove user from your blacklist
+- unblock: remove a user from your blacklist.
 	unblock [user]
 
-- online: check who else is currently online
+- online: check who else is currently online.
 	online
 
-- getaddress: add a user to your address book for private P2P messaging.
+- getaddress: request to add a user to your address book for private P2P messaging; if the the user agrees, then each user is added to each other's address book.
 	getaddresss [user]
 
-- removeaddress: remove user from your address book--no more private messaging.
+- removeaddress: remove user from address book; each user is removed from each other's address book.
 	removeaddress [user]
 
-- addressbook: check your address book to see who you can privately message.
+- addressbook: check address book to see who you can privately message.
 	addressbook
 
-- help: list all recognized commands
+- help: list all valid commands.
 	help
+
+- logout: log out user and terminate SimpleChat client session.
+	logout
+
+
+UPCOMING FEATURES
+
+- User statuses, e.g. available (default), busy, or invisible.
+
+- Groups and group messaging.
 
