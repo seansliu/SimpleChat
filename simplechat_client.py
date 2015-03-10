@@ -38,8 +38,8 @@ def sighandler(signum, frame):
         except:
            print 'ERROR: failed to inform SimpleChat Server of logout.'
 
-        # notify peers of logout 
-        msg = ' '.join((ALERT_LOGOUT, session_info['username']))
+        # tell peers to remove user from their address books
+        msg = ' '.join((REMOVE_ADDR, session_info['username']))
         for username in address_book:
             try:
                 end_sock = new_socket()
@@ -162,8 +162,9 @@ def process_commands():
             packet = ' '.join((PRIVATE_MSG, username, command[2]))
             if len(packet) > BUF_SIZE:
                 print '> ALERT: your message was truncated.'
-            send_packet(address_book[target_name], packet[:BUF_SIZE])
-            print '> Private message sent to user %s.\n' %target_name
+            result = send_packet(address_book[target_name], packet[:BUF_SIZE])
+            if result:
+                print '> Private message sent to user %s.\n' %target_name
 
         # log out
         elif command[0] == LOGOUT:
@@ -211,9 +212,10 @@ def send_packet(send_address, packet):
         send_sock.connect(send_address)
         send_sock.send(packet)
         send_sock.close()
+        return True
     except:
-         print '> ERROR: failed to send message to IP %s.\n>> %s\n' \
-        %(send_address[0], packet)
+        print '> ERROR: failed to send message to IP %s.\n' %send_address[0]
+        return False
 
 
 def process_incoming_packet(conn):
@@ -562,10 +564,9 @@ def main():
         raise SystemExit
 
     # print welcome
-    print ''
-    print '----------------------------------------------------------------\n'
-    print 'Welcome to SimpleChat, %s!\n' %session_info['username']
-    print '----------------------------------------------------------------\n'
+    print '\n--------------------------------------------------------------\n'
+    print 'Welcome to SimpleChat, %s!' %session_info['username']
+    print '\n--------------------------------------------------------------\n'
 
     # send heartbeats
     hb_msg = ' '.join((HEARTBEAT, session_info['username']))

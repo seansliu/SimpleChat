@@ -72,7 +72,7 @@ Online users can use the following commands:
 - removeaddress: remove user from address book; each user is removed from each other's address book.
 	removeaddress [user]
 
-- addressbook: check address book to see who you can privately message.
+- addressbook: check address book to see who you can privately message; when peers log out, they will be automatically removed from your address book.
 	addressbook
 
 - help: list all valid commands.

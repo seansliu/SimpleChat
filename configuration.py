@@ -33,7 +33,7 @@ HELP = 'help'
 
 
 # --- Protocol ---
-#
+
 # log responses from server to client
 LOGIN_OK = 'login0'
 INVALID_PASSWORD = 'login1'
