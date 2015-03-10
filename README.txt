@@ -28,13 +28,13 @@ The main challenge was implementing the chat service with non-persistent connect
 SimpleChat Server - simplechat_server.py
 The server had one main task: to process all incoming messages from clients and respond accordingly. I used a non-blocking accept method with the select module, only accepting from listen_sock when it had a client waiting to connect. The server then puts the new socket into socket_q, a blocking queue from which worker threads would get the socket. I implemented a fixed number (THREAD_POOL_SIZE) of worker threads that would all compete to get a socket, read from it, and handle it appropriately. 
 In addition, I used a separate thread to continually check for heartbeat messages, since these messages and responses are time-sensitive to the value stored in TIMEOUT.
-To support a graceful exit, I made all threads daemons so that they would exit along with the main function after SIGINT is caught.
+To support a graceful exit, I made all threads daemons so that they would exit along with the main function after SIGINT is caught. When the server is shut down, all clients are notified.
 The server used a dictionary to hold all the information of the users. Each key was a username, which mapped to another dictionary containing all the current information of that one user.
 
 SimpleChat Client - simplechat_client.py
 The client had two main tasks: to process all user commands and to respond to incoming messages from the server. Using a separate thread, processing user commands was a simple task of parsing user input commands and sending the appropriate messages. To respond to incoming messages, I also listened and accepted from a non-blocking listen_sock, but the client only used the main thread to accept incoming messages and process them. I made this decision because the client should not need a thread pool of worker threads, as its traffic should be nowhere near as heavy as that of the server.
 In addition, I used a separate thread to continually send heartbeat messages to the server, since these messages are time-sensitive to the value stored in TIMEOUT.
-To support a graceful exit, I made all threads daemons so that they would exit along with the main function after SIGINT is caught.
+To support a graceful exit, I made all threads daemons so that they would exit along with the main function after SIGINT is caught. A client will exit when the user logs out and when the server notifies it of shutdown. However, a client will continue to run if the user currently has other users in the address book--private messaging is still allowed.
 The client used two dictionaries to keep track of important information: session_info to hold the current session address and the server's address, and address_book to hold the addresses of other users for private messaging.
 
 Configuration - configuration.py
@@ -54,7 +54,7 @@ Online users can use the following commands:
 - broadcast: send a message through the server to all online users.
 	broadcast [message_text]
 
-- private: privately send a private message to a user through a P2P connection; the user must currently be in your address book.
+- private: privately send a private message to a user through a P2P connection; the user must currently be in your address book; private messages can still be exchanged when server is down.
 	private [user] [message_text]
 
 - block: add a user to your blacklist; if user A has blacklisted user B, then B may no longer send messages to A nor see if A is online. (A may still message B and see whether B is online.)
@@ -78,7 +78,7 @@ Online users can use the following commands:
 - help: list all valid commands.
 	help
 
-- logout: log out user and terminate SimpleChat client session.
+- logout: log out user and terminate SimpleChat client session; notify server and P2P peers of logout.
 	logout
 
 

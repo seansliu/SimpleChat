@@ -26,17 +26,29 @@ def sighandler(signum, frame):
     if 'listen_sock' in session_info:
         session_info['listen_sock'].close()
 
-    # notify server of logout
     if 'username' in session_info:
+        # notify server of logout
         msg = ' '.join((LOGOUT, session_info['username']))
         try:
             end_sock = new_socket()
             end_sock.connect(session_info['server_addr'])
             end_sock.send(msg)
             end_sock.close()
+            address_book.clear() # server will notify peers
         except:
-           print 'ERROR: failed to inform server of logout.'
-    
+           print 'ERROR: failed to inform SimpleChat Server of logout.'
+
+        # notify peers of logout 
+        msg = ' '.join((ALERT_LOGOUT, session_info['username']))
+        for username in address_book:
+            try:
+                end_sock = new_socket()
+                end_sock.connect(address_book[username])
+                end_sock.send(msg)
+                end_sock.close()
+            except:
+               print 'ERROR: failed to inform user %s of logout.' %username
+
     print '\n-----------------SimpleChat Client closed.-------------------\n'
     sys.exit(1)
 
@@ -158,6 +170,7 @@ def process_commands():
             print '> Thank you for using Simple Chat. See you soon, %s!\n' \
             %username
             interrupt_main()
+            
             # interrupt accept
             kill_sock = new_socket()
             kill_sock.connect(session_info['host_addr'])
@@ -473,7 +486,7 @@ def login():
     """manages user login"""
     server_addr = session_info['server_addr']
     host_addr = session_info['host_addr']
-    username = raw_input('Username: ')
+    username = raw_input('Username: ').strip()
 
     while 1:
         password = raw_input('Password: ')
