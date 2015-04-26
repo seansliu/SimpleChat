@@ -10,7 +10,6 @@ import sys
 from time import sleep
 from threading import Thread
 from thread import interrupt_main
-from Queue import Queue
 from configuration import *
 
 
@@ -63,7 +62,7 @@ def send_heartbeats(hb_msg):
 
 # thread
 def process_commands():
-    """manages the user's commands and puts them in the message queue"""
+    """interprets the user's commands and sends them"""
     username = session_info['username']
     server_addr = session_info['server_addr']
     host_ip = session_info['host_addr'][0]
@@ -472,7 +471,7 @@ def handle_logout_timed_out():
 
 
 def check_commandline(how_many):
-    """Checks the command line"""
+    """checks the command line"""
     args = len(sys.argv)
     if args != how_many:
         print 'correct use: python client.py <ip address> <port>'
